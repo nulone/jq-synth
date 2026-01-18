@@ -26,9 +26,7 @@ class TestLoadTasksValidJSON:
                 {
                     "id": "test-task",
                     "description": "Extract the name field",
-                    "examples": [
-                        {"input": {"name": "Alice"}, "expected_output": "Alice"}
-                    ],
+                    "examples": [{"input": {"name": "Alice"}, "expected_output": "Alice"}],
                 }
             ]
         }
@@ -358,9 +356,7 @@ class TestInteractiveMode:
             description="Extract user",
         )
 
-        assert task.examples[0].input_data == {
-            "user": {"name": "Alice", "roles": ["admin"]}
-        }
+        assert task.examples[0].input_data == {"user": {"name": "Alice", "roles": ["admin"]}}
         assert task.examples[0].expected_output == {
             "name": "Alice",
             "roles": ["admin"],
@@ -369,7 +365,7 @@ class TestInteractiveMode:
     def test_creates_task_with_array_input(self):
         """Interactive mode handles array input."""
         task = _create_interactive_task(
-            input_json='[1, 2, 3]',
+            input_json="[1, 2, 3]",
             output_json="6",
             description="Sum array",
         )
@@ -774,9 +770,7 @@ class TestMainMaxIters:
                 )
                 mock_orch_class.return_value = mock_orch
 
-                main(
-                    ["--task", "test", "--tasks-file", str(tasks_file), "--max-iters", "7"]
-                )
+                main(["--task", "test", "--tasks-file", str(tasks_file), "--max-iters", "7"])
 
                 call_kwargs = mock_orch_class.call_args[1]
                 assert call_kwargs["max_iterations"] == 7

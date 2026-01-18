@@ -698,10 +698,7 @@ class TestAttemptProperties:
         reviewer: AlgorithmicReviewer,
     ):
         """Number of ExampleResults matches number of examples in task."""
-        examples = [
-            Example(input_data={"x": i}, expected_output=i)
-            for i in range(5)
-        ]
+        examples = [Example(input_data={"x": i}, expected_output=i) for i in range(5)]
         task = Task(id="five-examples", description="Test", examples=examples)
 
         attempt = reviewer.evaluate(task, ".x")

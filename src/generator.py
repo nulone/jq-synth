@@ -195,7 +195,7 @@ class JQGenerator:
             httpx.RequestError: If the request fails after retries.
             GenerationError: If the response format is invalid.
         """
-        last_error = None
+        last_error: httpx.RequestError | None = None
 
         for attempt in range(self.MAX_RETRIES):
             try:
@@ -206,7 +206,10 @@ class JQGenerator:
                 error_msg = str(e)
 
                 # Provide helpful error messages for common connection issues
-                if "nodename nor servname provided" in error_msg or "Name or service not known" in error_msg:
+                if (
+                    "nodename nor servname provided" in error_msg
+                    or "Name or service not known" in error_msg
+                ):
                     logger.warning(
                         "DNS resolution failed (attempt %d/%d). "
                         "Verify the endpoint URL or set LLM_BASE_URL environment variable.",
@@ -241,7 +244,10 @@ class JQGenerator:
         # All retries exhausted
         if isinstance(last_error, httpx.ConnectError):
             error_msg = str(last_error)
-            if "nodename nor servname provided" in error_msg or "Name or service not known" in error_msg:
+            if (
+                "nodename nor servname provided" in error_msg
+                or "Name or service not known" in error_msg
+            ):
                 raise GenerationError(
                     "DNS resolution failed. Please verify the endpoint URL is correct "
                     "or set LLM_BASE_URL environment variable to the correct endpoint."

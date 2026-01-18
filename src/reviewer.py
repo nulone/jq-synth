@@ -16,9 +16,12 @@ from src.executor import ExecutionResult, JQExecutor
 
 logger = logging.getLogger(__name__)
 
+
 # Sentinel to distinguish parse failure from valid None/null
 class _ParseError:
     pass
+
+
 _PARSE_ERROR = _ParseError()
 
 
@@ -239,9 +242,7 @@ class AlgorithmicReviewer:
         # Type mismatch for scalars
         return 0.0, ErrorType.SHAPE, f"Type mismatch: expected {expected_type}, got {actual_type}"
 
-    def _analyze_list(
-        self, actual: list[Any], expected: list[Any]
-    ) -> tuple[float, ErrorType, str]:
+    def _analyze_list(self, actual: list[Any], expected: list[Any]) -> tuple[float, ErrorType, str]:
         """
         Analyze list outputs using Jaccard similarity and order detection.
 
@@ -260,7 +261,11 @@ class AlgorithmicReviewer:
             return 0.0, ErrorType.MISSING_EXTRA, f"Expected empty list but got {len(actual)} items"
 
         if not actual:
-            return 0.0, ErrorType.MISSING_EXTRA, f"Expected {len(expected)} items but got empty list"
+            return (
+                0.0,
+                ErrorType.MISSING_EXTRA,
+                f"Expected {len(expected)} items but got empty list",
+            )
 
         # Convert to comparable strings for multiset operations
         def to_str(item: Any) -> str:
@@ -290,9 +295,7 @@ class AlgorithmicReviewer:
         intersection_size = sum(
             min(actual_counter[elem], expected_counter[elem]) for elem in all_elements
         )
-        union_size = sum(
-            max(actual_counter[elem], expected_counter[elem]) for elem in all_elements
-        )
+        union_size = sum(max(actual_counter[elem], expected_counter[elem]) for elem in all_elements)
         jaccard = intersection_size / union_size if union_size else 1.0
 
         # Check for missing/extra elements (unique elements)
