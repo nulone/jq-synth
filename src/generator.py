@@ -312,9 +312,23 @@ class JQGenerator:
         else:
             text = response.strip()
 
-        # Remove 'jq ' prefix (case insensitive)
-        if text.lower().startswith("jq "):
-            text = text[3:]
+        # Remove common introductory phrases (case insensitive)
+        text_lower = text.lower()
+        prefixes_to_remove = [
+            "here is the filter:",
+            "here is the jq filter:",
+            "the filter is:",
+            "the jq filter is:",
+            "filter:",
+            "jq filter:",
+            "jq ",
+        ]
+
+        for prefix in prefixes_to_remove:
+            if text_lower.startswith(prefix):
+                text = text[len(prefix):].strip()
+                text_lower = text.lower()
+                break  # Only remove one prefix
 
         # Strip outer quotes (both single and double)
         if len(text) >= 2:

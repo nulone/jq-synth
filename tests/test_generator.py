@@ -237,6 +237,77 @@ class TestExtractComplexCases:
             assert result == ".items | map(.x) | add"
 
 
+class TestExtractIntroductoryPhraseRemoval:
+    """Regression tests for removing introductory phrases from LLM responses."""
+
+    def test_removes_here_is_the_filter(self):
+        """Removes 'Here is the filter:' prefix."""
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "test-key"}):
+            generator = JQGenerator()
+            result = generator._extract("Here is the filter: .user.name")
+            assert result == ".user.name"
+
+    def test_removes_here_is_the_jq_filter(self):
+        """Removes 'Here is the jq filter:' prefix."""
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "test-key"}):
+            generator = JQGenerator()
+            result = generator._extract("Here is the jq filter: .items[]")
+            assert result == ".items[]"
+
+    def test_removes_the_filter_is(self):
+        """Removes 'The filter is:' prefix."""
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "test-key"}):
+            generator = JQGenerator()
+            result = generator._extract("The filter is: .data.id")
+            assert result == ".data.id"
+
+    def test_removes_the_jq_filter_is(self):
+        """Removes 'The jq filter is:' prefix."""
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "test-key"}):
+            generator = JQGenerator()
+            result = generator._extract("The jq filter is: .x + .y")
+            assert result == ".x + .y"
+
+    def test_removes_filter_colon(self):
+        """Removes 'Filter:' prefix."""
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "test-key"}):
+            generator = JQGenerator()
+            result = generator._extract("Filter: .status")
+            assert result == ".status"
+
+    def test_removes_jq_filter_colon(self):
+        """Removes 'jq filter:' prefix."""
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "test-key"}):
+            generator = JQGenerator()
+            result = generator._extract("jq filter: .enabled")
+            assert result == ".enabled"
+
+    def test_case_insensitive_removal(self):
+        """Phrase removal is case insensitive."""
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "test-key"}):
+            generator = JQGenerator()
+            result = generator._extract("HERE IS THE FILTER: .name")
+            assert result == ".name"
+
+    def test_preserves_filter_content(self):
+        """Filter content is not modified during prefix removal."""
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "test-key"}):
+            generator = JQGenerator()
+            # Complex filter with spaces and special chars
+            result = generator._extract(
+                'Here is the filter: [.[] | select(.type == "active") | .id]'
+            )
+            assert result == '[.[] | select(.type == "active") | .id]'
+
+    def test_only_removes_one_prefix(self):
+        """Only the first matching prefix is removed."""
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "test-key"}):
+            generator = JQGenerator()
+            # If filter itself contains "filter:", it should be preserved
+            result = generator._extract("Filter: .filter")
+            assert result == ".filter"
+
+
 class TestBuildPromptExamples:
     """Tests for _build_prompt method including examples."""
 
