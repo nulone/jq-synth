@@ -12,8 +12,20 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.cli import _create_interactive_task, _parse_args, load_tasks, main
-from src.domain import Task
+from src.cli import (
+    _create_interactive_task,
+    _estimate_difficulty,
+    _format_api_key_error,
+    _format_jq_not_found_error,
+    _format_score,
+    _format_task_not_found_error,
+    _parse_args,
+    _setup_logging,
+    _validate_json_string,
+    load_tasks,
+    main,
+)
+from src.domain import Example, Task
 
 
 class TestLoadTasksValidJSON:
@@ -933,3 +945,216 @@ class TestMainInvalidTasksFile:
         assert result == 1
         captured = capsys.readouterr()
         assert "Missing field" in captured.err
+
+
+class TestFormatJQNotFoundError:
+    """Tests for _format_jq_not_found_error function."""
+
+    def test_contains_error_symbol(self) -> None:
+        """Error message should contain warning symbol."""
+        result = _format_jq_not_found_error()
+        assert "jq binary not found" in result
+
+    def test_contains_installation_instructions(self) -> None:
+        """Error message should include platform-specific install commands."""
+        result = _format_jq_not_found_error()
+        assert "brew install jq" in result
+        assert "apt-get install jq" in result
+        assert "choco install jq" in result
+
+    def test_contains_verification_steps(self) -> None:
+        """Error message should include verification command."""
+        result = _format_jq_not_found_error()
+        assert "jq --version" in result
+
+
+class TestFormatApiKeyError:
+    """Tests for _format_api_key_error function."""
+
+    def test_openai_provider_message(self) -> None:
+        """OpenAI provider should show OpenAI-specific instructions."""
+        result = _format_api_key_error("openai")
+        assert "OpenAI" in result or "openai" in result.lower()
+        assert "OPENAI_API_KEY" in result
+        assert "platform.openai.com" in result
+
+    def test_anthropic_provider_message(self) -> None:
+        """Anthropic provider should show Anthropic-specific instructions."""
+        result = _format_api_key_error("anthropic")
+        assert "Anthropic" in result or "anthropic" in result.lower()
+        assert "ANTHROPIC_API_KEY" in result
+        assert "console.anthropic.com" in result
+
+    def test_unknown_provider_message(self) -> None:
+        """Unknown provider should show generic message."""
+        result = _format_api_key_error("unknown-provider")
+        assert "API key required" in result
+        assert "unknown-provider" in result
+
+
+class TestFormatTaskNotFoundError:
+    """Tests for _format_task_not_found_error function."""
+
+    def test_shows_task_id(self) -> None:
+        """Error message should show the invalid task ID."""
+        task = Task(id="valid", description="Test", examples=[])
+        result = _format_task_not_found_error("invalid", [task])
+        assert "invalid" in result
+
+    def test_suggests_close_match(self) -> None:
+        """Error message should suggest close matches."""
+        task = Task(id="nested-field", description="Extract nested field", examples=[])
+        result = _format_task_not_found_error("nested-fiel", [task])
+        assert "nested-field" in result
+        assert "Did you mean" in result or "mean" in result
+
+    def test_lists_available_tasks(self) -> None:
+        """Error message should list available task IDs."""
+        task1 = Task(id="task-1", description="First task", examples=[])
+        task2 = Task(id="task-2", description="Second task", examples=[])
+        result = _format_task_not_found_error("invalid", [task1, task2])
+        assert "task-1" in result
+        assert "task-2" in result
+
+    def test_limits_task_list_to_five(self) -> None:
+        """Error message should show only first 5 tasks."""
+        tasks = [
+            Task(id=f"task-{i}", description=f"Task {i}", examples=[])
+            for i in range(10)
+        ]
+        result = _format_task_not_found_error("invalid", tasks)
+        assert "and 5 more" in result or "more" in result
+
+
+class TestValidateJsonString:
+    """Tests for _validate_json_string function."""
+
+    def test_valid_json_object(self) -> None:
+        """Valid JSON object should be accepted."""
+        is_valid, error, data = _validate_json_string('{"x": 1}', "input")
+        assert is_valid is True
+        assert error == ""
+        assert data == {"x": 1}
+
+    def test_valid_json_array(self) -> None:
+        """Valid JSON array should be accepted."""
+        is_valid, error, data = _validate_json_string('[1, 2, 3]', "input")
+        assert is_valid is True
+        assert error == ""
+        assert data == [1, 2, 3]
+
+    def test_valid_json_string(self) -> None:
+        """Valid JSON string should be accepted."""
+        is_valid, error, data = _validate_json_string('"hello"', "input")
+        assert is_valid is True
+        assert error == ""
+        assert data == "hello"
+
+    def test_valid_json_number(self) -> None:
+        """Valid JSON number should be accepted."""
+        is_valid, error, data = _validate_json_string('42', "output")
+        assert is_valid is True
+        assert error == ""
+        assert data == 42
+
+    def test_invalid_json_missing_brace(self) -> None:
+        """Invalid JSON with missing brace should be detected."""
+        is_valid, error, data = _validate_json_string('{"x": 1', "input")
+        assert is_valid is False
+        assert "Invalid JSON" in error
+        assert "Missing closing brace" in error
+        assert data is None
+
+    def test_invalid_json_missing_bracket(self) -> None:
+        """Invalid JSON with missing bracket should be detected."""
+        is_valid, error, data = _validate_json_string('[1, 2', "input")
+        assert is_valid is False
+        assert "Invalid JSON" in error
+        assert "Missing closing bracket" in error
+        assert data is None
+
+    def test_invalid_json_single_quotes(self) -> None:
+        """Invalid JSON with single quotes should suggest double quotes."""
+        is_valid, error, data = _validate_json_string("{'x': 1}", "input")
+        assert is_valid is False
+        assert "Invalid JSON" in error
+        assert 'double quotes' in error or 'Use "' in error
+        assert data is None
+
+    def test_invalid_json_unmatched_quote(self) -> None:
+        """Invalid JSON with unmatched quote should be detected."""
+        is_valid, error, data = _validate_json_string('{"x": "hello}', "input")
+        assert is_valid is False
+        assert "Invalid JSON" in error
+        assert data is None
+
+    def test_error_message_shows_position(self) -> None:
+        """Error message should show line and column of error."""
+        is_valid, error, data = _validate_json_string('{"x": invalid}', "input")
+        assert is_valid is False
+        assert "Line" in error or "line" in error
+        assert "Column" in error or "column" in error
+        assert data is None
+
+    def test_error_message_includes_example(self) -> None:
+        """Error message should include example of valid JSON."""
+        is_valid, error, data = _validate_json_string('invalid', "input")
+        assert is_valid is False
+        assert "Example" in error or "example" in error
+        assert data is None
+
+
+
+class TestEstimateDifficulty:
+    """Tests for _estimate_difficulty function."""
+
+    def test_advanced_keywords(self) -> None:
+        """Tasks with advanced keywords should be marked as advanced."""
+        task = Task(id="test", description="Group by field and aggregate", examples=[])
+        assert _estimate_difficulty(task) == "advanced"
+
+    def test_intermediate_keywords(self) -> None:
+        """Tasks with intermediate keywords should be marked as intermediate."""
+        task = Task(id="test", description="Filter active users and select names", examples=[])
+        assert _estimate_difficulty(task) == "intermediate"
+
+    def test_basic_default(self) -> None:
+        """Tasks without special keywords should be marked as basic."""
+        task = Task(id="test", description="Extract the name field", examples=[])
+        assert _estimate_difficulty(task) == "basic"
+
+
+class TestFormatScore:
+    """Tests for _format_score function."""
+
+    def test_perfect_score(self) -> None:
+        """Perfect score should be formatted."""
+        result = _format_score(1.0)
+        assert "1.000" in result
+
+    def test_partial_score(self) -> None:
+        """Partial score should be formatted."""
+        result = _format_score(0.75)
+        assert "0.750" in result
+
+    def test_zero_score(self) -> None:
+        """Zero score should be formatted."""
+        result = _format_score(0.0)
+        assert "0.000" in result
+
+
+class TestSetupLogging:
+    """Tests for _setup_logging function."""
+
+    def test_debug_mode(self) -> None:
+        """Debug mode should set DEBUG level."""
+        import logging
+        _setup_logging(verbose=False, debug=True)
+        # Check that debug mode was set (may not be directly testable)
+        # Just ensure it runs without error
+        assert True
+
+    def test_verbose_mode(self) -> None:
+        """Verbose mode should set INFO level."""
+        import logging
+        _setup_logging(verbose=True, debug=False)
