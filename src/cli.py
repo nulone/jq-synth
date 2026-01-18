@@ -381,7 +381,7 @@ def _create_interactive_task(
 
 def _format_score(score: float) -> str:
     """Format score with color based on value."""
-    if score == 1.0:
+    if score >= 0.999:  # Perfect score per domain model (Attempt.is_perfect)
         return success(f"{score:.3f}")
     elif score >= 0.8:
         return warning(f"{score:.3f}")

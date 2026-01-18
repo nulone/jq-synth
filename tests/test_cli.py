@@ -1445,6 +1445,25 @@ class TestFormatScore:
         result = _format_score(0.0)
         assert "0.000" in result
 
+    def test_format_near_perfect_score(self) -> None:
+        """Score >= 0.999 should be treated as perfect (regression test)."""
+        from src.cli import _format_score
+        from src.colors import success, warning
+
+        # Test exact 0.999 - should be treated as perfect
+        result = _format_score(0.999)
+        assert "0.999" in result
+        # Should use success color (green) not warning
+        expected = success("0.999")
+        assert result == expected
+
+        # Test slightly below 0.999 - should NOT be perfect
+        result_below = _format_score(0.998)
+        assert "0.998" in result_below
+        # Should use warning color (yellow) not success
+        expected_warning = warning("0.998")
+        assert result_below == expected_warning
+
 
 class TestPrintTaskResult:
     """Tests for _print_solution function."""
