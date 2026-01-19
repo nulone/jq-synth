@@ -56,8 +56,6 @@ include = ["src*"]
 target-version = "py310"
 line-length = 100
 src = ["src", "tests"]
-
-[tool.ruff.lint]
 select = [
     "E",      # pycodestyle errors
     "W",      # pycodestyle warnings
@@ -83,24 +81,20 @@ ignore = [
     "PLW2901",  # Loop variable overwritten (intentional in some cases)
     "ARG001",   # Unused function argument (normal in tests)
     "ARG002",   # Unused method argument (normal in tests)
-    "PLC0415",  # Import should be at top-level (normal in tests)
+    "E402",     # Module level import not at top of file (normal in scripts)
     "E501",     # Line too long (readable code > strict line length)
     "SIM108",   # Use ternary operator (explicit if-else can be clearer)
     "SIM102",   # Use single if statement (nested can be clearer)
+    "SIM114",   # Combine if branches (explicit can be clearer)
     "SIM117",   # Use single with statement (nested can be clearer)
     "F841",     # Unused variable (normal in tests for assertion side effects)
-    "RUF012",   # Mutable class attribute (intentional for constants)
+    "F811",     # Redefinition of unused variable (normal in tests)
+    "PLC1901",  # Empty string comparison (explicit can be clearer)
     "ERA001",   # Commented-out code (useful for documentation in tests)
 ]
 
-[tool.ruff.lint.isort]
+[tool.ruff.isort]
 known-first-party = ["src"]
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-skip-magic-trailing-comma = false
-line-ending = "auto"
 
 [tool.mypy]
 python_version = "3.10"

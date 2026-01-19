@@ -1,6 +1,5 @@
 """Tests for security utilities."""
 
-import pytest
 
 from src.security import mask_api_key, sanitize_for_logging, truncate_for_logging
 
@@ -250,7 +249,7 @@ class TestBearerTokenMasking:
         # Real JWT format: header.payload.signature
         jwt = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U"
         result = sanitize_for_logging(jwt)
-        
+
         # Token should be masked
         assert "[MASKED:" in result
         # JWT parts should not be visible
@@ -262,7 +261,7 @@ class TestBearerTokenMasking:
         """Bearer token with dots should have dots included in mask."""
         text = "Bearer abc.def.ghi"
         result = sanitize_for_logging(text)
-        
+
         assert "[MASKED:" in result
         # Full token including dots should be masked
         assert "abc.def.ghi" not in result
@@ -273,7 +272,7 @@ class TestBearerTokenMasking:
         """Bearer token with equals signs should include them in mask."""
         text = "Bearer token123=="
         result = sanitize_for_logging(text)
-        
+
         assert "[MASKED:" in result
         # Token including equals should be masked
         assert "token123==" not in result
@@ -283,7 +282,7 @@ class TestBearerTokenMasking:
         """Bearer token with alphanumeric, dots, equals, hyphens, underscores."""
         text = "Bearer abc-def_ghi.jkl==mno"
         result = sanitize_for_logging(text)
-        
+
         assert "[MASKED:" in result
         # All characters should be captured
         assert "abc-def_ghi.jkl==mno" not in result
@@ -292,7 +291,7 @@ class TestBearerTokenMasking:
         """Multiple Bearer tokens should all be masked."""
         text = "Token1: Bearer abc.def.ghi Token2: Bearer xyz.uvw.rst"
         result = sanitize_for_logging(text)
-        
+
         assert result.count("[MASKED:") == 2
         assert "abc.def.ghi" not in result
         assert "xyz.uvw.rst" not in result
@@ -301,7 +300,7 @@ class TestBearerTokenMasking:
         """The word 'Bearer' itself should not be masked, only the token after it."""
         text = "Authorization: Bearer token123"
         result = sanitize_for_logging(text)
-        
+
         # Word "Bearer" should still be visible
         assert "Bearer" in result
         # But token should be masked
@@ -312,6 +311,6 @@ class TestBearerTokenMasking:
         """Bearer without a token should not cause issues."""
         text = "Bearer "
         result = sanitize_for_logging(text)
-        
+
         # Should not crash, just return as-is
         assert "Bearer" in result

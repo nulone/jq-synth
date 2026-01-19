@@ -25,7 +25,7 @@ from src.cli import (
     load_tasks,
     main,
 )
-from src.domain import Example, Solution, Task
+from src.domain import Solution, Task
 
 
 class TestLoadTasksValidJSON:
@@ -1148,7 +1148,6 @@ class TestSetupLogging:
 
     def test_debug_mode(self) -> None:
         """Debug mode should set DEBUG level."""
-        import logging
         _setup_logging(verbose=False, debug=True)
         # Check that debug mode was set (may not be directly testable)
         # Just ensure it runs without error
@@ -1156,7 +1155,6 @@ class TestSetupLogging:
 
     def test_verbose_mode(self) -> None:
         """Verbose mode should set INFO level."""
-        import logging
         _setup_logging(verbose=True, debug=False)
 
 
@@ -1169,7 +1167,7 @@ class TestListTasks:
         """_list_tasks should display tasks grouped by difficulty."""
         from src.cli import _list_tasks
         from src.domain import Example
-        
+
         tasks = [
             Task(
                 id="basic-task",
@@ -1187,9 +1185,9 @@ class TestListTasks:
                 examples=[Example(input_data=[], expected_output=[])],
             ),
         ]
-        
+
         _list_tasks(tasks)
-        
+
         captured = capsys.readouterr()
         assert "Available Tasks" in captured.out
         assert "basic-task" in captured.out
@@ -1205,7 +1203,7 @@ class TestListTasks:
         """_list_tasks should truncate long descriptions."""
         from src.cli import _list_tasks
         from src.domain import Example
-        
+
         tasks = [
             Task(
                 id="long-desc",
@@ -1213,9 +1211,9 @@ class TestListTasks:
                 examples=[Example(input_data={}, expected_output={})],
             ),
         ]
-        
+
         _list_tasks(tasks)
-        
+
         captured = capsys.readouterr()
         # Should be truncated to 60 chars + "..."
         assert "..." in captured.out
@@ -1226,7 +1224,7 @@ class TestListTasks:
         """_list_tasks should handle singular 'example' correctly."""
         from src.cli import _list_tasks
         from src.domain import Example
-        
+
         tasks = [
             Task(
                 id="single",
@@ -1234,9 +1232,9 @@ class TestListTasks:
                 examples=[Example(input_data={}, expected_output={})],
             ),
         ]
-        
+
         _list_tasks(tasks)
-        
+
         captured = capsys.readouterr()
         assert "1 example" in captured.out
         assert "1 examples" not in captured.out
@@ -1247,7 +1245,7 @@ class TestListTasks:
         """_list_tasks should handle plural 'examples' correctly."""
         from src.cli import _list_tasks
         from src.domain import Example
-        
+
         tasks = [
             Task(
                 id="multiple",
@@ -1258,9 +1256,9 @@ class TestListTasks:
                 ],
             ),
         ]
-        
+
         _list_tasks(tasks)
-        
+
         captured = capsys.readouterr()
         assert "2 examples" in captured.out
 
@@ -1335,7 +1333,7 @@ class TestPrintSummaryTable:
     def test_all_passed(self, capsys: pytest.CaptureFixture) -> None:
         """Summary should show success when all tasks pass."""
         from src.cli import _print_summary_table
-        
+
         solutions = [
             Solution(
                 task_id="task1",
@@ -1354,9 +1352,9 @@ class TestPrintSummaryTable:
                 history=[],
             ),
         ]
-        
+
         _print_summary_table(solutions)
-        
+
         captured = capsys.readouterr()
         assert "2/2 passed (100%)" in captured.out
 
@@ -1392,7 +1390,7 @@ class TestPrintSummaryTable:
     def test_partial_success(self, capsys: pytest.CaptureFixture) -> None:
         """Summary should show warning when some tasks fail."""
         from src.cli import _print_summary_table
-        
+
         solutions = [
             Solution(
                 task_id="task1",
@@ -1411,9 +1409,9 @@ class TestPrintSummaryTable:
                 history=[],
             ),
         ]
-        
+
         _print_summary_table(solutions)
-        
+
         captured = capsys.readouterr()
         assert "1/2 passed (50%)" in captured.out
 
@@ -1474,7 +1472,7 @@ class TestPrintTaskResult:
         """Task result should be printed without history when not verbose."""
         from src.cli import _print_solution
         from src.domain import Attempt, ErrorType, ExampleResult
-        
+
         solution = Solution(
             task_id="test",
             success=True,
@@ -1499,9 +1497,9 @@ class TestPrintTaskResult:
                 )
             ],
         )
-        
+
         _print_solution(solution, verbose=False)
-        
+
         captured = capsys.readouterr()
         assert "test" in captured.out
         assert ".x" in captured.out
@@ -1515,7 +1513,7 @@ class TestPrintTaskResult:
         """Task result should include history when verbose."""
         from src.cli import _print_solution
         from src.domain import Attempt, ErrorType, ExampleResult
-        
+
         solution = Solution(
             task_id="test",
             success=True,
@@ -1555,9 +1553,9 @@ class TestPrintTaskResult:
                 ),
             ],
         )
-        
+
         _print_solution(solution, verbose=True)
-        
+
         captured = capsys.readouterr()
         # History SHOULD be shown
         assert "History" in captured.out or "[0]" in captured.out or "[1]" in captured.out
@@ -1569,20 +1567,20 @@ class TestVerboseOutput:
     def test_parse_verbose_flag(self) -> None:
         """Verbose flag should be parsed correctly."""
         from src.cli import _parse_args
-        
+
         args = _parse_args(["--task", "test", "--verbose"])
         assert args.verbose is True
 
     def test_parse_verbose_short_flag(self) -> None:
         """Short verbose flag should be parsed correctly."""
         from src.cli import _parse_args
-        
+
         args = _parse_args(["--task", "test", "-v"])
         assert args.verbose is True
 
     def test_verbose_default_false(self) -> None:
         """Verbose should default to False."""
         from src.cli import _parse_args
-        
+
         args = _parse_args(["--task", "test"])
         assert args.verbose is False
