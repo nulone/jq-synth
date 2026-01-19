@@ -842,11 +842,7 @@ class TestFilterNormalization:
 
         from src.orchestrator import Orchestrator
 
-        orch = Orchestrator(
-            generator=MagicMock(),
-            reviewer=MagicMock(),
-            max_iterations=10
-        )
+        orch = Orchestrator(generator=MagicMock(), reviewer=MagicMock(), max_iterations=10)
 
         # Filters with different string content are different
         filter1 = '.[] | select(.x == "a b")'
@@ -866,11 +862,7 @@ class TestFilterNormalization:
 
         from src.orchestrator import Orchestrator
 
-        orch = Orchestrator(
-            generator=MagicMock(),
-            reviewer=MagicMock(),
-            max_iterations=10
-        )
+        orch = Orchestrator(generator=MagicMock(), reviewer=MagicMock(), max_iterations=10)
 
         # Same filter with different whitespace
         filter1 = '.x|select(.y=="test")'
@@ -889,14 +881,10 @@ class TestFilterNormalization:
 
         from src.orchestrator import Orchestrator
 
-        orch = Orchestrator(
-            generator=MagicMock(),
-            reviewer=MagicMock(),
-            max_iterations=10
-        )
+        orch = Orchestrator(generator=MagicMock(), reviewer=MagicMock(), max_iterations=10)
 
         filter1 = '.x == "\\"quoted\\""'
-        filter2 = '.x=="\\\"quoted\\\""'
+        filter2 = '.x=="\\"quoted\\""'
 
         norm1 = orch._normalize(filter1)
         norm2 = orch._normalize(filter2)
@@ -910,11 +898,7 @@ class TestFilterNormalization:
 
         from src.orchestrator import Orchestrator
 
-        orch = Orchestrator(
-            generator=MagicMock(),
-            reviewer=MagicMock(),
-            max_iterations=10
-        )
+        orch = Orchestrator(generator=MagicMock(), reviewer=MagicMock(), max_iterations=10)
 
         # Different: one has space in string, other doesn't
         filter1 = '.x + " " + .y'
@@ -934,11 +918,7 @@ class TestFilterNormalization:
 
         from src.orchestrator import Orchestrator
 
-        orch = Orchestrator(
-            generator=MagicMock(),
-            reviewer=MagicMock(),
-            max_iterations=10
-        )
+        orch = Orchestrator(generator=MagicMock(), reviewer=MagicMock(), max_iterations=10)
 
         filter_code = '.[] | select(.name == "John Doe" and .city == "New York")'
         normalized = orch._normalize(filter_code)
@@ -947,8 +927,8 @@ class TestFilterNormalization:
         assert '"John Doe"' in normalized
         assert '"New York"' in normalized
         # Spaces outside strings should be removed
-        assert ' and ' not in normalized
-        assert 'and' in normalized
+        assert " and " not in normalized
+        assert "and" in normalized
 
     def test_normalize_empty_filter(self) -> None:
         """Empty filter should return empty string."""
@@ -956,11 +936,7 @@ class TestFilterNormalization:
 
         from src.orchestrator import Orchestrator
 
-        orch = Orchestrator(
-            generator=MagicMock(),
-            reviewer=MagicMock(),
-            max_iterations=10
-        )
+        orch = Orchestrator(generator=MagicMock(), reviewer=MagicMock(), max_iterations=10)
 
         assert orch._normalize("") == ""
         assert orch._normalize("   ") == ""
@@ -971,18 +947,14 @@ class TestFilterNormalization:
 
         from src.orchestrator import Orchestrator
 
-        orch = Orchestrator(
-            generator=MagicMock(),
-            reviewer=MagicMock(),
-            max_iterations=10
-        )
+        orch = Orchestrator(generator=MagicMock(), reviewer=MagicMock(), max_iterations=10)
 
-        filter1 = '. [] | . x | . y'
-        filter2 = '.[]|.x|.y'
+        filter1 = ". [] | . x | . y"
+        filter2 = ".[]|.x|.y"
 
         norm1 = orch._normalize(filter1)
         norm2 = orch._normalize(filter2)
 
         # Should be same
         assert norm1 == norm2
-        assert norm1 == '.[]|.x|.y'
+        assert norm1 == ".[]|.x|.y"

@@ -1,6 +1,5 @@
 """Tests for security utilities."""
 
-
 from src.security import mask_api_key, sanitize_for_logging, truncate_for_logging
 
 

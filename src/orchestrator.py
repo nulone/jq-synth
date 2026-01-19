@@ -286,7 +286,7 @@ class Orchestrator:
                 escape_next = False
                 continue
 
-            if char == '\\':
+            if char == "\\":
                 result.append(char)
                 escape_next = True
                 continue

@@ -1018,10 +1018,7 @@ class TestFormatTaskNotFoundError:
 
     def test_limits_task_list_to_five(self) -> None:
         """Error message should show only first 5 tasks."""
-        tasks = [
-            Task(id=f"task-{i}", description=f"Task {i}", examples=[])
-            for i in range(10)
-        ]
+        tasks = [Task(id=f"task-{i}", description=f"Task {i}", examples=[]) for i in range(10)]
         result = _format_task_not_found_error("invalid", tasks)
         assert "and 5 more" in result or "more" in result
 
@@ -1038,7 +1035,7 @@ class TestValidateJsonString:
 
     def test_valid_json_array(self) -> None:
         """Valid JSON array should be accepted."""
-        is_valid, error, data = _validate_json_string('[1, 2, 3]', "input")
+        is_valid, error, data = _validate_json_string("[1, 2, 3]", "input")
         assert is_valid is True
         assert error == ""
         assert data == [1, 2, 3]
@@ -1052,7 +1049,7 @@ class TestValidateJsonString:
 
     def test_valid_json_number(self) -> None:
         """Valid JSON number should be accepted."""
-        is_valid, error, data = _validate_json_string('42', "output")
+        is_valid, error, data = _validate_json_string("42", "output")
         assert is_valid is True
         assert error == ""
         assert data == 42
@@ -1067,7 +1064,7 @@ class TestValidateJsonString:
 
     def test_invalid_json_missing_bracket(self) -> None:
         """Invalid JSON with missing bracket should be detected."""
-        is_valid, error, data = _validate_json_string('[1, 2', "input")
+        is_valid, error, data = _validate_json_string("[1, 2", "input")
         assert is_valid is False
         assert "Invalid JSON" in error
         assert "Missing closing bracket" in error
@@ -1078,7 +1075,7 @@ class TestValidateJsonString:
         is_valid, error, data = _validate_json_string("{'x': 1}", "input")
         assert is_valid is False
         assert "Invalid JSON" in error
-        assert 'double quotes' in error or 'Use "' in error
+        assert "double quotes" in error or 'Use "' in error
         assert data is None
 
     def test_invalid_json_unmatched_quote(self) -> None:
@@ -1098,11 +1095,10 @@ class TestValidateJsonString:
 
     def test_error_message_includes_example(self) -> None:
         """Error message should include example of valid JSON."""
-        is_valid, error, data = _validate_json_string('invalid', "input")
+        is_valid, error, data = _validate_json_string("invalid", "input")
         assert is_valid is False
         assert "Example" in error or "example" in error
         assert data is None
-
 
 
 class TestEstimateDifficulty:
@@ -1161,9 +1157,7 @@ class TestSetupLogging:
 class TestListTasks:
     """Tests for _list_tasks function and --list-tasks flag."""
 
-    def test_list_tasks_function(
-        self, tmp_path: Path, capsys: pytest.CaptureFixture
-    ) -> None:
+    def test_list_tasks_function(self, tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
         """_list_tasks should display tasks grouped by difficulty."""
         from src.cli import _list_tasks
         from src.domain import Example
@@ -1197,9 +1191,7 @@ class TestListTasks:
         assert "Intermediate" in captured.out
         assert "Advanced" in captured.out
 
-    def test_list_tasks_with_long_description(
-        self, capsys: pytest.CaptureFixture
-    ) -> None:
+    def test_list_tasks_with_long_description(self, capsys: pytest.CaptureFixture) -> None:
         """_list_tasks should truncate long descriptions."""
         from src.cli import _list_tasks
         from src.domain import Example
@@ -1218,9 +1210,7 @@ class TestListTasks:
         # Should be truncated to 60 chars + "..."
         assert "..." in captured.out
 
-    def test_list_tasks_single_example(
-        self, capsys: pytest.CaptureFixture
-    ) -> None:
+    def test_list_tasks_single_example(self, capsys: pytest.CaptureFixture) -> None:
         """_list_tasks should handle singular 'example' correctly."""
         from src.cli import _list_tasks
         from src.domain import Example
@@ -1239,9 +1229,7 @@ class TestListTasks:
         assert "1 example" in captured.out
         assert "1 examples" not in captured.out
 
-    def test_list_tasks_multiple_examples(
-        self, capsys: pytest.CaptureFixture
-    ) -> None:
+    def test_list_tasks_multiple_examples(self, capsys: pytest.CaptureFixture) -> None:
         """_list_tasks should handle plural 'examples' correctly."""
         from src.cli import _list_tasks
         from src.domain import Example
@@ -1266,9 +1254,7 @@ class TestListTasks:
 class TestMainListTasksFlag:
     """Tests for main() with --list-tasks flag."""
 
-    def test_list_tasks_flag_success(
-        self, tmp_path: Path, capsys: pytest.CaptureFixture
-    ) -> None:
+    def test_list_tasks_flag_success(self, tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
         """--list-tasks should display tasks and return 0."""
         tasks_data = {
             "tasks": [
@@ -1289,9 +1275,7 @@ class TestMainListTasksFlag:
         assert "Available Tasks" in captured.out
         assert "test" in captured.out
 
-    def test_list_tasks_with_missing_file(
-        self, capsys: pytest.CaptureFixture
-    ) -> None:
+    def test_list_tasks_with_missing_file(self, capsys: pytest.CaptureFixture) -> None:
         """--list-tasks with missing file should return 1."""
         result = main(["--list-tasks", "--tasks-file", "/nonexistent/file.json"])
 
@@ -1422,24 +1406,28 @@ class TestFormatScore:
     def test_format_perfect_score(self) -> None:
         """Perfect score should be formatted."""
         from src.cli import _format_score
+
         result = _format_score(1.0)
         assert "1.000" in result
 
     def test_format_high_score(self) -> None:
         """High score should be formatted."""
         from src.cli import _format_score
+
         result = _format_score(0.85)
         assert "0.850" in result
 
     def test_format_low_score(self) -> None:
         """Low score should be formatted."""
         from src.cli import _format_score
+
         result = _format_score(0.25)
         assert "0.250" in result
 
     def test_format_zero_score(self) -> None:
         """Zero score should be formatted."""
         from src.cli import _format_score
+
         result = _format_score(0.0)
         assert "0.000" in result
 
@@ -1466,9 +1454,7 @@ class TestFormatScore:
 class TestPrintTaskResult:
     """Tests for _print_solution function."""
 
-    def test_print_result_without_verbose(
-        self, capsys: pytest.CaptureFixture
-    ) -> None:
+    def test_print_result_without_verbose(self, capsys: pytest.CaptureFixture) -> None:
         """Task result should be printed without history when not verbose."""
         from src.cli import _print_solution
         from src.domain import Attempt, ErrorType, ExampleResult
@@ -1507,9 +1493,7 @@ class TestPrintTaskResult:
         # History should NOT be shown
         assert "History" not in captured.out
 
-    def test_print_result_with_verbose(
-        self, capsys: pytest.CaptureFixture
-    ) -> None:
+    def test_print_result_with_verbose(self, capsys: pytest.CaptureFixture) -> None:
         """Task result should include history when verbose."""
         from src.cli import _print_solution
         from src.domain import Attempt, ErrorType, ExampleResult

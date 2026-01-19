@@ -32,9 +32,7 @@ class TestShouldUseColor:
         with patch("sys.stdout.isatty", return_value=False):
             assert should_use_color() is False
 
-    def test_returns_true_when_tty_and_no_env_var(
-        self, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
+    def test_returns_true_when_tty_and_no_env_var(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """should_use_color returns True when TTY and NO_COLOR not set."""
         monkeypatch.delenv("NO_COLOR", raising=False)
         with patch("sys.stdout.isatty", return_value=True):

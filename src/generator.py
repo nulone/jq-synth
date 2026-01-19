@@ -327,7 +327,7 @@ class JQGenerator:
             is_intro_only = False
             for prefix in skip_prefixes:
                 if line_lower.startswith(prefix):
-                    remainder = line[len(prefix):].strip()
+                    remainder = line[len(prefix) :].strip()
                     if not remainder:
                         is_intro_only = True
                         break
@@ -357,7 +357,7 @@ class JQGenerator:
 
         for prefix in prefixes_to_remove:
             if text_lower.startswith(prefix):
-                text = text[len(prefix):].strip()
+                text = text[len(prefix) :].strip()
                 break  # Only remove one prefix
 
         # Strip outer quotes (both single and double)
