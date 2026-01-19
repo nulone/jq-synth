@@ -307,6 +307,21 @@ class TestExtractIntroductoryPhraseRemoval:
             result = generator._extract("Filter: .filter")
             assert result == ".filter"
 
+    def test_multiline_with_prefix_on_separate_line(self):
+        """Prefix on separate line is skipped, filter on next line is extracted."""
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "test-key"}):
+            generator = JQGenerator()
+            # When prefix is on its own line, it should be skipped
+            result = generator._extract("Here is the filter:\n.user.name")
+            assert result == ".user.name"
+
+    def test_multiline_with_short_prefix(self):
+        """Short prefix on separate line is handled correctly."""
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "test-key"}):
+            generator = JQGenerator()
+            result = generator._extract("Filter:\n.data[].id")
+            assert result == ".data[].id"
+
 
 class TestBuildPromptExamples:
     """Tests for _build_prompt method including examples."""
