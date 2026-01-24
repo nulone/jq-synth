@@ -381,9 +381,11 @@ export LLM_MODEL='claude-sonnet-4-20250514'
 
 ```bash
 export LLM_BASE_URL='https://openrouter.ai/api/v1'
-export OPENAI_API_KEY='sk-or-...'
+export OPENAI_API_KEY="$OPENROUTER_API_KEY"
 export LLM_MODEL='anthropic/claude-3.5-sonnet'
 ```
+
+> Note: Set `OPENROUTER_API_KEY` environment variable with your OpenRouter API key before running.
 
 **Local (Ollama)**
 
